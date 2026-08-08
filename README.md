@@ -175,7 +175,6 @@ Typical dashboard functionality includes:
 statistical-arbitrage-strategy/
 │
 ├── app.py
-├── cointegration_and_backtesting_enhanced.py
 ├── requirements.txt
 ├── README.md
 └── ...
