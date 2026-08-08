@@ -8,8 +8,6 @@ The project combines **ADF residual testing, Johansen cointegration, mean-revers
 
 ## Live Demo
 
-Add your deployed Streamlit URL here:
-
 **(https://statistical-arbitrage-strategy-nifty50.streamlit.app/)**
 
 ## Project Overview
