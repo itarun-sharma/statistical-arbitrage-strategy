@@ -17,8 +17,39 @@ st.set_page_config(
 )
 
 DEFAULT_TICKERS = [
+    # Banking & Financials
     "HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "AXISBANK.NS",
-    "RELIANCE.NS", "TCS.NS", "INFY.NS", "ITC.NS"
+    "KOTAKBANK.NS", "INDUSINDBK.NS", "BANKBARODA.NS", "PNB.NS",
+    "CANBK.NS", "IDFCFIRSTB.NS", "FEDERALBNK.NS", "BAJFINANCE.NS",
+    "BAJAJFINSV.NS", "SBILIFE.NS", "HDFCLIFE.NS",
+
+    # IT
+    "TCS.NS", "INFY.NS", "HCLTECH.NS", "WIPRO.NS", "TECHM.NS",
+     "MPHASIS.NS", "PERSISTENT.NS",
+
+    # Energy, Oil & Gas
+    "RELIANCE.NS", "ONGC.NS", "NTPC.NS", "POWERGRID.NS",
+    "COALINDIA.NS", "BPCL.NS", "IOC.NS", "GAIL.NS",
+
+    # Consumer & FMCG
+    "ITC.NS", "HINDUNILVR.NS", "NESTLEIND.NS", "BRITANNIA.NS",
+    "TATACONSUM.NS", "ASIANPAINT.NS", "TITAN.NS", "TRENT.NS",
+
+    # Automobiles
+    "MARUTI.NS", "M&M.NS", "BAJAJ-AUTO.NS",
+    "EICHERMOT.NS", "HEROMOTOCO.NS",
+
+    # Industrials & Infrastructure
+    "LT.NS", "ADANIENT.NS", "ADANIPORTS.NS", "SIEMENS.NS",
+    "BEL.NS", "HAL.NS", "ABB.NS", "BHEL.NS",
+
+    # Pharma & Healthcare
+    "SUNPHARMA.NS", "DRREDDY.NS", "CIPLA.NS", "DIVISLAB.NS",
+    "APOLLOHOSP.NS", "LUPIN.NS",
+
+    # Telecom & Other Large Caps
+    "BHARTIARTL.NS", "JIOFIN.NS", "ULTRACEMCO.NS", "GRASIM.NS",
+    "JSWSTEEL.NS", "TATASTEEL.NS", "HINDALCO.NS", "VEDL.NS",
 ]
 
 
