@@ -68,9 +68,9 @@ These parameters are taken directly from the research run.
 
 The system analyzes **65 Indian equities**, generating up to:
 
-[
-\frac{65\times64}{2}=2080
-]
+$$
+\frac{65 \times 64}{2} = 2{,}080
+$$
 
 unique stock pairs.
 
@@ -86,21 +86,19 @@ For each pair, Ordinary Least Squares (OLS) regression is used to estimate the r
 
 A simplified model is:
 
-[
+$$
 Y_t = \alpha + \beta X_t + \epsilon_t
-]
+$$
 
 where:
 
-* (Y_t) = price of Stock 1
-* (X_t) = price of Stock 2
-* (\alpha) = intercept
-* (\beta) = hedge ratio
-* (\epsilon_t) = residual/spread
+* $Y_t$ = price of Stock 1
+* $X_t$ = price of Stock 2
+* $\alpha$ = intercept
+* $\beta$ = hedge ratio
+* $\epsilon_t$ = residual / spread
 
 The residual becomes the basis for testing whether the relationship is mean reverting.
-
----
 
 ## 3. Augmented Dickey-Fuller (ADF) Test
 
