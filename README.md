@@ -1,285 +1,460 @@
-# Statistical Arbitrage & Pairs Trading Platform
+# Statistical Arbitrage & Pairs Trading Research Platform
 
-An end-to-end quantitative research project for discovering, validating, and backtesting statistical arbitrage opportunities in Indian equities.
+An end-to-end quantitative research project for **discovering, validating, and backtesting statistical arbitrage opportunities in Indian equities** using pairs trading, OLS regression, Augmented Dickey-Fuller (ADF) testing, Johansen cointegration, Z-score based trading signals, and walk-forward validation.
 
-The project combines **ADF residual testing, Johansen cointegration, mean-reversion analysis, walk-forward validation, transaction costs, parameter sensitivity, and an interactive Streamlit dashboard**.
+> **Research project — historical backtest simulations only. Not investment advice.**
 
-> **Educational / research project:** Backtest results are historical simulations and are not investment advice or a guarantee of future performance.
+---
 
 ## Live Demo
 
 **[Live Streamlit Dashboard](https://statistical-arbitrage-strategy.streamlit.app/)**
 
-## Project Overview
 
-The system starts with an 8-stock universe:
+## 📌 Overview
 
-- HDFCBANK.NS
-- ICICIBANK.NS
-- SBIN.NS
-- AXISBANK.NS
-- RELIANCE.NS
-- TCS.NS
-- INFY.NS
-- ITC.NS
+This project searches a universe of **65 Indian stocks** for statistically related pairs that may exhibit mean-reverting behavior.
 
-For 8 stocks, the system evaluates all:
-
-**8 choose 2 = 28 unique pairs**
-
-The pipeline then filters candidate pairs using statistical tests before performing out-of-sample backtesting.
-
-## Methodology
+The research pipeline follows:
 
 ```text
-Market Data
-    ↓
-Train / Test Split
-    ↓
-28 Pair Combinations
-    ↓
-ADF Residual Test
-    ↓
-Johansen Cointegration Validation
-    ↓
-Select Validated Pair
-    ↓
-Estimate Cointegration Weights
-    ↓
-Calculate Spread
-    ↓
-ADF + Half-Life Analysis
-    ↓
-Trading Signals / Z-Score
-    ↓
-Transaction Costs
-    ↓
-Out-of-Sample Backtest
-    ↓
-Walk-Forward Validation
-    ↓
-Parameter Sensitivity
-    ↓
-Streamlit Dashboard
+Historical Market Data
+        ↓
+   OLS Regression
+        ↓
+    ADF Testing
+        ↓
+ Candidate Pair Selection
+        ↓
+ Johansen Cointegration
+        ↓
+   Spread Analysis
+        ↓
+ Z-Score Trading Signals
+        ↓
+ Out-of-Sample Backtest
+        ↓
+ Sensitivity Analysis
+        ↓
+ Walk-Forward Validation
 ```
 
-## Statistical Tests
+The objective is to determine whether a pair of stocks has a sufficiently stable statistical relationship that can potentially be exploited through **market-neutral pairs trading**.
 
-### 1. Augmented Dickey-Fuller (ADF)
+---
 
-The ADF test is applied to the residual/spread generated between two assets.
+## 🔬 Research Configuration
 
-A low p-value provides evidence against the null hypothesis of a unit root in the residual series.
+| Parameter                   |                   Value |
+| --------------------------- | ----------------------: |
+| Stock Universe              |               65 stocks |
+| Possible Pairs              |                   2,080 |
+| Historical Data             | 2015-01-01 → 2026-01-01 |
+| Training Period End         |              2022-12-31 |
+| ADF p-value Cutoff          |                    0.10 |
+| Maximum Johansen Candidates |                      20 |
+| Entry Z-Score               |                     1.5 |
+| Exit Z-Score                |                     0.0 |
+| Rolling Window              |                 20 days |
+| Transaction Cost            |                   5 bps |
 
-The project uses ADF as an initial pair-screening step.
+These parameters are taken directly from the research run.
 
-### 2. Johansen Cointegration Test
+---
 
-Candidate pairs are subsequently evaluated using the Johansen test.
+# 🧠 Methodology
 
-A pair is retained when the Johansen test indicates a cointegrating rank of 1 at the configured significance level.
+## 1. Stock Universe
 
-Using both tests reduces reliance on a single statistical criterion.
+The system analyzes **65 Indian equities**, generating up to:
 
-## Train / Test Design
+[
+\frac{65\times64}{2}=2080
+]
 
-The current configuration uses:
+unique stock pairs.
 
-| Dataset | Period |
-|---|---|
-| Training | 2015–2022 |
-| Testing | 2023–2025 |
+Historical data is divided into training and testing periods.
 
-The pair-selection and cointegration parameters are estimated using the training period, while the selected strategy is evaluated on previously unseen testing data.
+The run produced **1,976 training observations** and **740 testing observations**.
 
-This separation is intended to reduce look-ahead bias.
+---
 
-## Mean-Reversion Model
+## 2. OLS Regression
 
-The cointegration vector is normalized to construct the trading spread.
+For each pair, Ordinary Least Squares (OLS) regression is used to estimate the relationship between the two stocks.
 
-The strategy uses a rolling Z-score to identify deviations from the estimated mean:
+A simplified model is:
 
-- **Z-score below entry threshold:** long spread
-- **Z-score above entry threshold:** short spread
-- **Z-score returns toward the mean:** exit
+[
+Y_t = \alpha + \beta X_t + \epsilon_t
+]
 
-The dashboard allows the entry threshold to be varied for sensitivity analysis.
+where:
 
-## Walk-Forward Validation
+* (Y_t) = price of Stock 1
+* (X_t) = price of Stock 2
+* (\alpha) = intercept
+* (\beta) = hedge ratio
+* (\epsilon_t) = residual/spread
 
-The project also evaluates the methodology over multiple expanding training windows and subsequent out-of-sample periods.
+The residual becomes the basis for testing whether the relationship is mean reverting.
 
-Example folds:
+---
+
+## 3. Augmented Dickey-Fuller (ADF) Test
+
+The ADF test is applied to the residual spread.
+
+The objective is to determine whether the spread is **stationary**.
+
+Conceptually:
 
 ```text
-Fold 1: Train ≤ 2018 → Test 2019–2020
-Fold 2: Train ≤ 2020 → Test 2021–2022
-Fold 3: Train ≤ 2022 → Test 2023–2024
-Fold 4: Train ≤ 2024 → Test 2025
+Non-stationary spread
+       ↓
+   ADF test
+       ↓
+Stationary spread?
+       ↓
+Potential mean-reverting pair
 ```
 
-This helps evaluate whether the strategy's behavior is robust across different market periods rather than relying on a single train/test split.
+A lower ADF p-value provides stronger evidence against the null hypothesis of a unit root.
 
-## Transaction Costs
+The research used an ADF cutoff of **0.10**.
 
-Backtesting includes configurable transaction-cost assumptions so that reported performance is not based solely on frictionless trading.
+---
 
-## Current Example Results
+## 4. Pair Ranking
 
-One observed out-of-sample run selected:
+Pairs are ranked according to their ADF p-values.
 
-**ICICIBANK.NS / TCS.NS**
+The strongest candidate in the research run was:
 
-with approximately:
+### HDFCBANK.NS / KOTAKBANK.NS
 
-| Metric | Result |
-|---|---:|
-| OOS Total Return | 9.43% |
-| Annualized Return | 3.12% |
-| Annualized Volatility | 11.04% |
-| Sharpe Ratio | 0.33 |
-| Maximum Drawdown | -17.09% |
-| Trades | 58 |
+| Metric        |    Value |
+| ------------- | -------: |
+| ADF Statistic |  -4.9224 |
+| ADF p-value   | 0.000032 |
+| Beta          |   0.5170 |
+| Alpha         |   7.0044 |
 
-These numbers are **one historical backtest configuration**, not a claim of expected future returns.
+---
 
-The project also evaluates parameter sensitivity. In one run, increasing the entry Z-score changed the observed OOS results, demonstrating why parameter selection should not be based on a single backtest.
+# 5. Johansen Cointegration Validation
 
-## Streamlit Dashboard
+ADF identifies potentially stationary relationships, but the project additionally validates candidate pairs using the **Johansen cointegration test**.
 
-The Streamlit interface provides interactive access to the research pipeline.
+The research selected the top 20 candidates for Johansen testing.
 
-Typical dashboard functionality includes:
+Pairs with **Johansen rank = 1** were considered validated cointegrated pairs.
 
-- Stock universe configuration
-- Pair screening results
-- ADF statistics and p-values
-- Johansen validation
-- Validated pair selection
-- Cointegration weights
-- Spread visualization
-- Z-score visualization
-- Half-life
-- OOS performance metrics
-- Drawdown analysis
-- Trade statistics
-- Walk-forward results
-- Entry-threshold sensitivity
-
-## Project Structure
+The research found:
 
 ```text
-statistical-arbitrage-strategy/
-│
-├── app.py
-├── requirements.txt
-├── README.md
-└── ...
+394 ADF candidates
+        ↓
+20 Johansen candidates
+        ↓
+8 validated rank-1 pairs
 ```
 
-## Installation
+---
 
-Clone the repository:
+# ⭐ Selected Pair
 
-```bash
-git clone https://github.com/YOUR_USERNAME/statistical-arbitrage-strategy.git
-cd statistical-arbitrage-strategy
-```
+The selected pair was:
 
-Create a virtual environment:
+## HDFCBANK.NS / KOTAKBANK.NS
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Run the Streamlit Dashboard
-
-```bash
-python -m streamlit run app.py
-```
-
-Then open:
+### Cointegration
 
 ```text
-http://localhost:8501
+ADF p-value       : 0.000032
+Johansen rank     : 1
 ```
 
-## Run the Research Script
+Johansen cointegration weights:
 
-```bash
-python cointegration_and_backtesting_enhanced.py
+```text
+HDFCBANK.NS : -0.953823
+KOTAKBANK.NS:  1.000000
 ```
 
-The research script downloads historical market data and performs the statistical analysis and backtesting pipeline.
+The resulting spread showed:
 
-## Technologies
+| Diagnostic           |     Result |
+| -------------------- | ---------: |
+| Training ADF p-value |   0.000096 |
+| OOS ADF p-value      |   0.013998 |
+| Training Half-Life   | 25.12 days |
 
-- **Python**
-- **Pandas**
-- **NumPy**
-- **Statsmodels**
-- **yfinance**
-- **Matplotlib**
-- **Streamlit**
+---
 
-## Key Quantitative Concepts
+# 📈 Trading Strategy
 
-This project demonstrates practical implementation of:
+The strategy uses the spread's rolling Z-score to generate trading signals.
 
-- Statistical arbitrage
-- Pairs trading
-- Cointegration
-- Augmented Dickey-Fuller testing
-- Johansen cointegration testing
-- OLS hedge-ratio estimation
-- Mean reversion
-- Z-score signals
-- Half-life estimation
-- Out-of-sample testing
-- Walk-forward validation
-- Transaction-cost modeling
-- Drawdown analysis
-- Sharpe ratio
-- Parameter sensitivity analysis
+The basic idea is:
 
-## Limitations
+```text
+Spread moves far from mean
+          ↓
+      Z-score rises
+          ↓
+      Enter trade
+          ↓
+Spread mean reverts
+          ↓
+      Z-score → 0
+          ↓
+      Exit trade
+```
 
-This is a research/backtesting project and has several important limitations:
+### Parameters
 
-1. Historical relationships can break down.
-2. Cointegration is not guaranteed to remain stable.
-3. Daily data does not model intraday execution.
-4. Slippage, market impact, liquidity constraints, and borrow availability may differ from assumptions.
-5. Statistical significance does not guarantee profitability.
-6. Multiple testing across many pairs can create false discoveries.
-7. The current universe is small and focused on selected Indian equities.
-8. Backtest results should not be interpreted as live-trading performance.
+```text
+Entry Z-score : 1.5
+Exit Z-score  : 0.0
+Rolling Window: 20 days
+Transaction Cost: 5 bps
+```
 
-## Future Improvements
+The strategy attempts to exploit **relative mispricing between the two stocks**, rather than simply predicting whether the overall market will rise or fall.
 
-Potential extensions include:
+---
 
-- Dynamic hedge-ratio estimation using Kalman filters
-- Regime detection
-- Johansen rank selection across larger universes
-- False-discovery-rate control for multiple pair testing
-- More realistic slippage and market-impact models
-- Position sizing based on volatility
-- Stop-loss / risk controls
-- Portfolio-level optimization across multiple pairs
-- Intraday data
-- Live paper trading
-- Broker API integration
-- Automated monitoring and alerts
+# 🧪 Out-of-Sample Backtest
 
-## Disclaimer
+The selected pair was evaluated on previously unseen data.
 
-This repository is intended for **educational and quantitative research purposes only**. It does not constitute financial, investment, or trading advice. Historical backtest performance does not guarantee future results.
+### Test Period
+
+```text
+2023-01-02 → 2025-12-31
+```
+
+### Results
+
+| Metric            |     Result |
+| ----------------- | ---------: |
+| Total Return      | **19.13%** |
+| Annualized Return |  **6.14%** |
+| Volatility        |  **9.01%** |
+| Sharpe Ratio      |   **0.71** |
+| Maximum Drawdown  | **-8.69%** |
+| Number of Trades  |     **38** |
+| Winning Days      |    **241** |
+| Losing Days       |    **235** |
+
+---
+
+# 📊 Entry Z-Score Sensitivity
+
+The strategy was tested with different entry thresholds.
+
+| Entry Z | OOS Return | Annual Return |   Sharpe | Max Drawdown | Trades |
+| ------: | ---------: | ------------: | -------: | -----------: | -----: |
+|     0.5 |     30.40% |         9.46% |     0.91 |      -11.30% |     62 |
+|     1.0 |     15.48% |         5.02% |     0.56 |       -9.22% |     48 |
+| **1.5** | **19.13%** |     **6.14%** | **0.71** |   **-8.69%** | **38** |
+|     2.0 |     19.41% |         6.23% |     0.82 |       -8.69% |     26 |
+
+This demonstrates how changing the entry threshold affects:
+
+* Return
+* Trade frequency
+* Sharpe ratio
+* Drawdown
+
+---
+
+# 🔄 Walk-Forward Validation
+
+To reduce the risk of relying on a single train/test split, the project also performs **walk-forward validation**.
+
+The research contains four folds:
+
+```text
+Fold 1
+Train ≤ 2018
+Test  → 2019–2020
+
+Fold 2
+Train ≤ 2020
+Test  → 2021–2022
+
+Fold 3
+Train ≤ 2022
+Test  → 2023–2024
+
+Fold 4
+Train ≤ 2024
+Test  → 2025
+```
+
+Each fold performs a fresh pair scan instead of assuming that the relationship discovered in one period remains optimal forever.
+
+### Example Results
+
+Fold 3 produced:
+
+| Pair                 | OOS Return | Annual Return |   Sharpe |  Max DD |
+| -------------------- | ---------: | ------------: | -------: | ------: |
+| HDFCBANK / KOTAKBANK |     26.15% |        12.66% | **1.45** |  -4.74% |
+| ABB / SBIN           |      8.22% |         4.14% |     0.36 | -13.20% |
+| GRASIM / TATASTEEL   |     35.80% |        17.00% | **1.71** | -11.36% |
+| ITC / NTPC           |    -14.23% |        -7.58% |    -0.54 | -27.93% |
+
+The walk-forward results also demonstrate an important characteristic of statistical arbitrage:
+
+> A statistically significant relationship does **not** guarantee profitable future trading performance.
+
+Some highly cointegrated pairs produced negative out-of-sample returns.
+
+---
+
+# 🏆 Research Summary
+
+The complete research pipeline produced:
+
+| Stage                |                   Result |
+| -------------------- | -----------------------: |
+| Stocks Analyzed      |                   **65** |
+| Possible Pairs       |                **2,080** |
+| ADF Candidates       |                  **394** |
+| Johansen Candidates  |                   **20** |
+| Validated Pairs      |                    **8** |
+| Selected Pair        | **HDFCBANK / KOTAKBANK** |
+| OOS Return           |               **19.13%** |
+| OOS Sharpe           |                 **0.71** |
+| OOS Maximum Drawdown |               **-8.69%** |
+
+---
+
+# 🛠️ Technologies & Concepts
+
+### Programming
+
+* Python
+* NumPy
+* Pandas
+* SciPy
+* Statsmodels
+* Matplotlib
+
+### Quantitative Finance
+
+* Statistical Arbitrage
+* Pairs Trading
+* Cointegration
+* Mean Reversion
+* Hedge Ratios
+* Spread Modeling
+* Z-Scores
+* Backtesting
+* Transaction Costs
+* Walk-Forward Validation
+
+### Statistical Methods
+
+* Ordinary Least Squares (OLS)
+* Augmented Dickey-Fuller (ADF)
+* Johansen Cointegration Test
+* Rolling Statistics
+
+---
+
+# 📂 Project Pipeline
+
+```text
+                    ┌─────────────────────┐
+                    │ Historical Prices   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │  Generate Pairs     │
+                    │    65 → 2,080       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │    OLS Regression   │
+                    │  Estimate Hedge β   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      ADF Test       │
+                    │ Stationarity Filter │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Johansen Validation │
+                    │ Cointegration Rank  │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Spread + Z-Score    │
+                    │ Trading Signals     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ OOS Backtesting     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Sensitivity +       │
+                    │ Walk-Forward Tests  │
+                    └─────────────────────┘
+```
+
+---
+
+# 🚀 Key Takeaways
+
+1. **Statistical significance is not the same as profitability.**
+2. ADF can identify stationary residual relationships, but additional validation is useful.
+3. Johansen testing provides another perspective on cointegration.
+4. Out-of-sample testing is essential for evaluating whether a strategy generalizes.
+5. Walk-forward validation helps test whether the strategy remains useful across different market regimes.
+6. Transaction costs must be included when evaluating a trading strategy.
+7. Different Z-score thresholds produce significantly different risk/return profiles.
+
+---
+
+# ⚠️ Disclaimer
+
+This repository is an **academic/quantitative research project**.
+
+All reported performance figures are based on historical backtest simulations and **do not represent guaranteed future returns**.
+
+This project is **not investment advice** and should not be used as the sole basis for making financial decisions.
+
+---
+
+## 📌 Current Research Result
+
+The strongest pair identified in the primary research run was:
+
+```text
+HDFCBANK.NS
+      +
+KOTAKBANK.NS
+
+ADF p-value       : 0.000032
+Johansen rank     : 1
+OOS Return        : 19.13%
+Annualized Return : 6.14%
+Sharpe Ratio      : 0.71
+Max Drawdown      : -8.69%
+```
+
+**Research complete.**
